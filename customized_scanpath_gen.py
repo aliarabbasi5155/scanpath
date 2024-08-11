@@ -65,11 +65,11 @@ def gen_scanpaths(generator,
 
 
 if __name__ == '__main__':
-    args = docopt(__doc__)
-    device = torch.device('cuda:{}'.format(args['--cuda']))
-    hparams = args["<hparams>"]
-    dataset_root = args["<dataset_root>"]
-    checkpoint = args["<checkpoint_dir>"]
+    # args = docopt(__doc__)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    hparams = "hparams/coco_search18.json"
+    dataset_root = "Google Drive"
+    checkpoint = "trained_models"
     hparams = JsonConfig(hparams)
 
     # dir of pre-computed beliefs
@@ -142,10 +142,12 @@ if __name__ == '__main__':
                                 hparams.Data.im_h,
                                 num_sample=1)
 
-    for elem in predictions:
+    for index,elem in enumerate(predictions):
         filename = elem['task']+"/" + elem['name']
-        image = cv.imread("../images/"+filename)
+        print(str(index)+". "+filename)
 
+        image = cv.imread("/home/ali/Repos/Scanpath_Prediction/Website/1 COCOSearch18-images-TP 3101 target-present (TP) images (size: 1680x1050)/images/" + filename)
+        
         X = elem['X']
         Y = elem['Y']
 
