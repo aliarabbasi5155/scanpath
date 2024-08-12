@@ -83,6 +83,7 @@ if __name__ == '__main__':
     print(bbox_annos['bottle_000000018658.jpg'])
     bbox_annos['bottle_111bottle.jpg'] = [43, 195, 34, 105]
     bbox_annos['bottle_222bottle.jpg'] = [54, 205, 32, 114]
+    bbox_annos['bottle_333bottle.jpg'] = [54, 205, 32, 114]
     with open(join(dataset_root,
                    'human_scanpaths_TP_trainval_train.json')) as json_file:
         human_scanpaths_train = json.load(json_file)
