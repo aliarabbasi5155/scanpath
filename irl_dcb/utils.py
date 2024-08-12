@@ -47,6 +47,8 @@ def select_action(obs, policy, sample_action, action_mask=None,
     if sample_action:
         m = Categorical(probs)
         if action_mask is not None:
+            # Alair
+            action_mask = action_mask.to(dtype=torch.bool)
             # prevent sample previous actions by re-normalizing probs
             probs_new = probs.clone().detach()
             if softmask:

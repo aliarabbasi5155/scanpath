@@ -80,7 +80,8 @@ if __name__ == '__main__':
     # bounding box of the target object (for search efficiency evaluation)
     bbox_annos = np.load(join(dataset_root, 'bbox_annos.npy'),
                          allow_pickle=True).item()
-
+    print(bbox_annos['bottle_000000018658.jpg'])
+    bbox_annos['bottle_111bottle.jpg'] = [43, 195, 34, 105]
     with open(join(dataset_root,
                    'human_scanpaths_TP_trainval_train.json')) as json_file:
         human_scanpaths_train = json.load(json_file)

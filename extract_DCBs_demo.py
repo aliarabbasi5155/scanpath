@@ -51,10 +51,10 @@ if __name__ == '__main__':
     predictor = DefaultPredictor(cfg)
 
     # Compute DCB
-    img_path = './Website/1 COCOSearch18-images-TP 3101 target-present (TP) images (size: 1680x1050)/images/bottle/000000573206.jpg'
+    img_path = './Website/1 COCOSearch18-images-TP 3101 target-present (TP) images (size: 1680x1050)/images/bottle/111bottle.jpg'
     high_feat, low_feat = get_DCBs(img_path, predictor)
     print(high_feat.shape, low_feat.shape)
 
     # Save the features for later use
-    torch.save(high_feat, 'high_feat.pth.tar')
-    torch.save(low_feat, 'low_feat.pth.tar')
+    torch.save(high_feat, 'Google Drive/DCBs/HR/bottle/111bottle.pth.tar')
+    torch.save(low_feat, 'Google Drive/DCBs/LR/bottle/111bottle.pth.tar')
