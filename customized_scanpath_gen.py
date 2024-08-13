@@ -166,5 +166,5 @@ if __name__ == '__main__':
                 yprec = int(Y[i-1])
                 cv.line(image, (xprec, yprec), (x, y), (255, 255, 255))
 
-        os.makedirs("./results/" + elem['task'] + "/", exist_ok=True)
-        cv.imwrite("./results/" + elem['task'] + "/" + elem['name'], image)
+        os.makedirs("./old_results/" + elem['task'] + "/", exist_ok=True)
+        cv.imwrite("./old_results/" + elem['task'] + "/" + elem['name'], image)
