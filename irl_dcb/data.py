@@ -109,6 +109,77 @@ class LHF_IRL(Dataset):
             'action_mask': action_mask
         }
 
+class NEW_LHF_IRL(Dataset):
+    """
+    Image data for training generator
+    """
+
+    def __init__(self, DCB_HR_dir, DCB_LR_dir, img_info, pa, catIds):
+        self.img_info = img_info # 000 = 'bottle_000000019544.jpg' 001 = 'bottle_000000026564.jpg'
+        # self.annos = annos # 'fork_000000537944.jpg' = [56, 229, 33, 49] 'knife_000000233539.jpg' = [372, 193, 114, 92]
+        self.pa = pa # Hyperparameters 'im_w' = 512 'im_h' = 320 'patch_num' = [32, 20] 'patch_size' = [16, 16] 'patch_count' = 640 'fovea_radius' = 2 'IOR_size' = 1 'max_traj_length' = 6
+        # self.initial_fix = initial_fix # 'bottle_333bottle.jpg' = (0.4523214285714286, 0.37838095238095243) 'bottle_111bottle.jpg' = (0.4523214285714286, 0.37838095238095243)
+        self.catIds = catIds # Category IDs 'bottle' = 0 'bowl' = 1 'car' = 2 'chair' = 3 'clock' = 4 'cup' = 5 'fork' = 6 'keyboard' = 7 'knife' = 8 'laptop' = 9 'microwave' = 10 'mouse' = 11 'oven' = 12 'potted plant' = 13 'sink' = 14 'stop sign' = 15 'toilet' = 16 'tv' = 17
+        self.LR_dir = DCB_LR_dir # DCB LR Directory
+        self.HR_dir = DCB_HR_dir # DCB HR Directory
+
+    def __len__(self):
+        return len(self.img_info)
+
+    def __getitem__(self, idx):
+        cat_name, img_name = self.img_info[idx].split('_') # cat_name = 'bottle' , img_name = '000000019544.jpg'
+        feat_name = img_name[:-3] + 'pth.tar' #  000000019544.jpg --> 000000019544.pth.tar
+        lr_path = join(self.LR_dir, cat_name.replace(' ', '_'), feat_name) # DCB_LR_dir/bottle/000000019544.pth.tar
+        hr_path = join(self.HR_dir, cat_name.replace(' ', '_'), feat_name) # DCB_HR_dir/bottle/000000019544.pth.tar
+        lr = torch.load(lr_path) # Load DCB_LR file
+        hr = torch.load(hr_path) # Load DCB_HR file
+        imgId = cat_name + '_' + img_name # bottle_000000019544.jpg dobare mishe img_info[idx]
+
+        # TODO: ina ro daghighan nemifahmam vali bayad haminjoori piade sazi beshe
+
+        # update state with initial fixation
+        # init_fix = self.initial_fix[imgId] # init fixation (0.4523214285714286, 0.37838095238095243) 
+        # TODO: I removed the upper line and added the following line
+        init_fix  = self.pa.im_w / 2, self.pa.im_h / 2
+        px, py = init_fix # 0 = 0.5011904761904762 1 = 0.5048571428571429 --> px = 0.5011904761904762 py = 0.5048571428571429
+        print(f"px: {px} lr.size(-1): {lr.size(-1)} py:{py} lr.size(-2):{lr.size(-2)})")
+        px, py = px * lr.size(-1), py * lr.size(-2) 
+        mask = utils.foveal2mask(px, py, self.pa.fovea_radius, hr.size(-2),
+                                 hr.size(-1))
+        mask = torch.from_numpy(mask)
+        mask = mask.unsqueeze(0).repeat(hr.size(0), 1, 1)
+        lr = (1 - mask) * lr + mask * hr
+
+        # history fixation map
+        print(f"hr.size(-2): {hr.size(-2)} hr.size(-1): {hr.size(-1)} self.pa.IOR_size: {self.pa.IOR_size}")
+
+        history_map = torch.zeros((hr.size(-2), hr.size(-1)))
+        history_map = (1 - mask[0]) * history_map + mask[0] * 1
+
+        # action mask
+        action_mask = torch.zeros((self.pa.patch_num[1], self.pa.patch_num[0]),
+                                  dtype=torch.uint8)
+        px, py = init_fix
+        px, py = int(px * self.pa.patch_num[0]), int(py * self.pa.patch_num[1])
+        action_mask[py - self.pa.IOR_size:py + self.pa.IOR_size + 1, px -
+                    self.pa.IOR_size:px + self.pa.IOR_size + 1] = 1
+
+        # # target location label
+        # coding = utils.multi_hot_coding(self.annos[imgId], self.pa.patch_size,
+        #                                 self.pa.patch_num)
+        # coding = torch.from_numpy(coding).view(1, -1)
+
+        return {
+            'task_id': self.catIds[cat_name],
+            'img_name': img_name,
+            'cat_name': cat_name,
+            'lr_feats': lr,
+            'hr_feats': hr,
+            'history_map': history_map,
+            'init_fix': torch.FloatTensor(init_fix),
+            # 'label_coding': coding,
+            'action_mask': action_mask
+        }
 
 class LHF_Human_Gaze(Dataset):
     """
@@ -247,3 +318,4 @@ class FakeDataRollout(object):
             # GIOR_batch = self.GIOR[ind]
 
             yield GS_batch, GA_batch, GP_batch, tid_batch
+
