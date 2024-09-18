@@ -8,6 +8,7 @@ Options:
   --cuda=<id>   id of the cuda device [default: 0].
 """
 
+import random
 import torch
 import numpy as np
 import json
@@ -21,10 +22,10 @@ torch.manual_seed(42619)
 np.random.seed(42619)
 
 if __name__ == '__main__':
-    args = docopt(__doc__)
-    device = torch.device('cuda:{}'.format(args['--cuda']))
-    hparams = args["<hparams>"]
-    dataset_root = args["<dataset_root>"]
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    hparams = "DCBs_JSONs/20230301_1147_sail_serach.json"
+    # hparams = "hparams/coco_search18.json"
+    dataset_root = "DCBs_JSONs/dataset_test"
     hparams = JsonConfig(hparams)
 
     # dir of pre-computed beliefs
@@ -37,11 +38,16 @@ if __name__ == '__main__':
 
     # load ground-truth human scanpaths
     with open(join(dataset_root,
-                   'coco_search18_fixations_TP_train.json')) as json_file:
+                   'SAIL_fixations_TP_train.json')) as json_file:
         human_scanpaths_train = json.load(json_file)
-    with open(join(dataset_root,
-                   'coco_search18_fixations_TP_validation.json')) as json_file:
-        human_scanpaths_valid = json.load(json_file)
+    
+    # Randomly select 20% of the elements
+    num_samples = int(len(human_scanpaths_train) * 0.1)
+    human_scanpaths_valid = random.sample(human_scanpaths_train, num_samples)
+    
+    # Remove the selected items from the original list
+    human_scanpaths_train = [item for item in human_scanpaths_train
+                             if item not in human_scanpaths_valid]
 
     # exclude incorrect scanpaths
     if hparams.Train.exclude_wrong_trials:
