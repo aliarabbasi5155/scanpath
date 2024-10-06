@@ -8,7 +8,6 @@ Options:
   --cuda=<id>   id of the cuda device [default: 0].
 """
 
-import random
 import torch
 import numpy as np
 import json
@@ -37,17 +36,16 @@ if __name__ == '__main__':
                          allow_pickle=True).item()
 
     # load ground-truth human scanpaths
-    with open(join(dataset_root,
-                   'SAIL_fixations_TP_train.json')) as json_file:
+    # with open(join(dataset_root, # TODO: scanpath dakhele directory e dataset root bashe behtare
+    #                'SAIL_fixations_TP_train.json')) as json_file:
+    #     human_scanpaths_train = json.load(json_file)
+    with open('human_scanpath_train_split.json') as json_file:
         human_scanpaths_train = json.load(json_file)
-    
-    # Randomly select 20% of the elements
-    num_samples = int(len(human_scanpaths_train) * 0.1)
-    human_scanpaths_valid = random.sample(human_scanpaths_train, num_samples)
-    
-    # Remove the selected items from the original list
-    human_scanpaths_train = [item for item in human_scanpaths_train
-                             if item not in human_scanpaths_valid]
+
+    # with open(join(dataset_root, # TODO: scanpath dakhele directory e dataset root bashe behtare
+    #                'SAIL_fixations_TP_train.json')) as json_file:
+    with open('human_scanpath_valid_split.json') as json_file:
+        human_scanpaths_valid = json.load(json_file)
 
     # exclude incorrect scanpaths
     if hparams.Train.exclude_wrong_trials:

@@ -15,7 +15,7 @@ def cutFixOnTarget(trajs, target_annos):
         trajs = list(filter(lambda x: x['condition'] == 'present', trajs))
     for task in task_names:
         task_trajs = list(filter(lambda x: x['task'] == task, trajs))
-        num_steps_task = np.ones(len(task_trajs), dtype=np.uint8)
+        num_steps_task = np.ones(len(task_trajs), dtype=np.int16)
         for i, traj in enumerate(task_trajs):
             key = traj['task'] + '_' + traj['name']
             bbox = target_annos[key]
@@ -251,7 +251,7 @@ def get_num_steps(trajs, target_annos, task_names):
     num_steps = {}
     for task in task_names:
         task_trajs = list(filter(lambda x: x['task'] == task, trajs))
-        num_steps_task = np.ones(len(task_trajs), dtype=np.uint8)
+        num_steps_task = np.ones(len(task_trajs), dtype=np.int16)
         for i, traj in enumerate(task_trajs):
             key = traj['task'] + '_' + traj['name']
             bbox = target_annos[key]
