@@ -43,7 +43,12 @@ def action_to_pos(acts, patch_size, patch_num):
 
 def select_action(obs, policy, sample_action, action_mask=None,
                   softmask=False, eps=1e-12):
-    probs, values = policy(*obs)
+    # obs is a tuple, ensure that it includes EEG data
+    obs_fov, task_ids, eeg_data = obs  # Unpack the obs to get EEG data
+    
+    # Pass obs_fov, task_ids, and eeg_data to the policy
+    probs, values = policy(obs_fov, task_ids, eeg_data)  # Include EEG data
+    
     if sample_action:
         m = Categorical(probs)
         if action_mask is not None:
@@ -79,8 +84,8 @@ def collect_trajs(env,
                   sample_action=True):
 
     rewards = []
-    obs_fov = env.observe()
-    act, log_prob, value, prob = select_action((obs_fov, env.task_ids),
+    obs_fov, eeg_data = env.observe()
+    act, log_prob, value, prob = select_action((obs_fov, env.task_ids, eeg_data),
                                                policy,
                                                sample_action,
                                                action_mask=env.action_mask)
@@ -96,9 +101,9 @@ def collect_trajs(env,
             new_obs_fov, curr_status = env.step(act)
             status.append(curr_status)
             actions.append(act)
-            obs_fov = new_obs_fov
+            obs_fov, eeg_data = new_obs_fov
             act, log_prob, value, prob_new = select_action(
-                (obs_fov, env.task_ids),
+                (obs_fov, env.task_ids, eeg_data),
                 policy,
                 sample_action,
                 action_mask=env.action_mask)
@@ -119,14 +124,14 @@ def collect_trajs(env,
 
             status.append(curr_status)
             SASPs.append((obs_fov, act, new_obs_fov))
-            obs_fov = new_obs_fov
+            obs_fov, eeg_data = new_obs_fov
 
             IORs.append(
                 env.action_mask.to(dtype=torch.float).view(
                     env.batch_size, 1, patch_num[1], -1))
 
             act, log_prob, value, prob_new = select_action(
-                (obs_fov, env.task_ids),
+                (obs_fov, env.task_ids, eeg_data),
                 policy,
                 sample_action,
                 action_mask=env.action_mask)
@@ -436,7 +441,7 @@ def save(global_step,
     if max_checkpoints is not None:
         history = []
         for file_name in os.listdir(pkg_dir):
-            if re.search("save_{}_\d*k\d*\.pkg".format(name), file_name):
+            if re.search(r"save_{}_\d*k\d*\.pkg".format(name), file_name):
                 digits = file_name.replace("save_{}_".format(name),
                                            "").replace(".pkg", "").split("k")
                 number = int(digits[0]) * 1000 + int(digits[1])
