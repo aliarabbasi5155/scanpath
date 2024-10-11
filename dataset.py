@@ -11,10 +11,19 @@ def process_data(trajs_train,
                  hparams,
                  is_testing=False):
     target_init_fixs = {}
+    eeg_train_data = {}  # Add a dictionary to store training EEG data
+    eeg_valid_data = {}  # Add a dictionary to store validation EEG data
     for traj in trajs_train + trajs_valid:
         key = traj['task'] + '_' + traj['name']
         target_init_fixs[key] = (traj['X'][0] / hparams.Data.im_w,
                                  traj['Y'][0] / hparams.Data.im_h)
+        # Collect EEG data for the corresponding task and image
+        if 'eeg_data' in traj:  # Ensure EEG data is available in the trajectory
+            if traj in trajs_train:
+                eeg_train_data[key] = traj['eeg_data']  # Store EEG data for training
+            else:
+                eeg_valid_data[key] = traj['eeg_data']  # Store EEG data for validation
+
     cat_names = list(np.unique([x['task'] for x in trajs_train]))
     catIds = dict(zip(cat_names, list(range(len(cat_names)))))
 
@@ -46,10 +55,10 @@ def process_data(trajs_train,
     # load image data
     train_img_dataset = LHF_IRL(DCB_HR_dir, DCB_LR_dir, target_init_fixs,
                                 train_task_img_pair, target_annos,
-                                hparams.Data, catIds)
+                                hparams.Data, catIds, eeg_data=eeg_train_data)
     valid_img_dataset = LHF_IRL(DCB_HR_dir, DCB_LR_dir, target_init_fixs,
                                 valid_task_img_pair, target_annos,
-                                hparams.Data, catIds)
+                                hparams.Data, catIds, eeg_data=eeg_valid_data)
 
     # load human gaze data
     train_HG_dataset = LHF_Human_Gaze(DCB_HR_dir, DCB_LR_dir, train_fix_labels,

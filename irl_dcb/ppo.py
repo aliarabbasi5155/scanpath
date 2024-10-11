@@ -26,8 +26,9 @@ class PPO():
         self.value_loss_fun = torch.nn.SmoothL1Loss()
 
     def evaluate_actions(self, obs_batch, actions_batch):
+        obs_fov, task_ids, eeg_data = obs_batch
 
-        probs, values = self.policy(*obs_batch)
+        probs, values = self.policy(obs_fov, task_ids, eeg_data)
         dist = Categorical(probs)
         log_probs = dist.log_prob(actions_batch)
 

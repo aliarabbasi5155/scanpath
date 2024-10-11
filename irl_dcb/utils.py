@@ -164,7 +164,8 @@ def collect_trajs(env,
                 'rewards': R[:ind, i],
                 'task_id': env.task_ids[i].repeat(ind),
                 'img_name': [env.img_names[i]] * ind,
-                'length': ind
+                'length': ind,
+                'eeg_data': eeg_data[i]  # Include EEG data in the trajectory
             })
 
     return trajs

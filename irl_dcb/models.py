@@ -65,10 +65,14 @@ class LHF_Policy_Cond_Small(nn.Module):
         self.critic0 = nn.Conv2d(128 + target_size, 128, 3)
         self.critic1 = nn.Conv2d(128 + target_size, 256, 3)
         self.critic2 = nn.Linear(256 + target_size, 64)
-        self.critic3 = nn.Linear(64, 1)
+
+        # new layer to process EEG data
+        self.eeg_fc = nn.Linear(3, 32)  # assuming 3 EEG features
+
+        # final critic layer adjusted to accommodate EEG features
+        self.critic3 = nn.Linear(64 + 32, 1)  # increased size to accommodate EEG features
 
         self.task_eye = task_eye
-
     def get_one_hot(self, tid):
         task_onehot = self.task_eye[tid]
         return task_onehot
@@ -78,9 +82,8 @@ class LHF_Policy_Cond_Small(nn.Module):
         bs, _, h, w = feat_maps.size()
         task_maps = tid_onehot.expand(bs, tid_onehot.size(1), h, w)
         return torch.cat([feat_maps, task_maps], dim=1)
-
-    def forward(self, x, tid, act_only=False):
-        """ output the action probability"""
+    def forward(self, x, tid, eeg_data, act_only=False):
+        """output the action probability"""
         bs, _, h, w = x.size()
         tid_onehot = self.get_one_hot(tid)
         tid_onehot = tid_onehot.view(bs, tid_onehot.size(1), 1, 1)
@@ -104,5 +107,10 @@ class LHF_Policy_Cond_Small(nn.Module):
         x = x.view(bs, x.size(1), -1).mean(dim=-1)
         x = torch.cat([x, tid_onehot.squeeze()], dim=1)
         x = torch.relu(self.critic2(x))
+
+        # process EEG data and concatenate
+        eeg_out = torch.relu(self.eeg_fc(eeg_data))
+        x = torch.cat([x, eeg_out], dim=1)  # combine main features with EEG features
+
         state_values = self.critic3(x)
         return act_probs, state_values

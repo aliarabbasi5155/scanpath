@@ -49,7 +49,7 @@ class LHF_IRL(Dataset):
     """
 
     def __init__(self, DCB_HR_dir, DCB_LR_dir, initial_fix, img_info, annos,
-                 pa, catIds):
+                 pa, catIds, eeg_data):
         self.img_info = img_info
         self.annos = annos
         self.pa = pa
@@ -57,6 +57,7 @@ class LHF_IRL(Dataset):
         self.catIds = catIds
         self.LR_dir = DCB_LR_dir
         self.HR_dir = DCB_HR_dir
+        self.eeg_data = eeg_data  # Store EEG data
 
     def __len__(self):
         return len(self.img_info)
@@ -66,8 +67,8 @@ class LHF_IRL(Dataset):
         feat_name = img_name[:-3] + 'pth.tar'
         lr_path = join(self.LR_dir, cat_name.replace(' ', '_'), feat_name)
         hr_path = join(self.HR_dir, cat_name.replace(' ', '_'), feat_name)
-        lr = torch.load(lr_path)
-        hr = torch.load(hr_path)
+        lr = torch.load(lr_path, weights_only=False)
+        hr = torch.load(hr_path, weights_only=False)
         imgId = cat_name + '_' + img_name
 
         # update state with initial fixation
@@ -97,6 +98,10 @@ class LHF_IRL(Dataset):
                                         self.pa.patch_num)
         coding = torch.from_numpy(coding).view(1, -1)
 
+        # Retrieve EEG data for this image
+        eeg_data = torch.FloatTensor(self.eeg_data[imgId]) if imgId in self.eeg_data else torch.zeros(3)  # Default to zeros if EEG data is missing
+
+        # Return the data, including the EEG data
         return {
             'task_id': self.catIds[cat_name],
             'img_name': img_name,
@@ -106,7 +111,8 @@ class LHF_IRL(Dataset):
             'history_map': history_map,
             'init_fix': torch.FloatTensor(init_fix),
             'label_coding': coding,
-            'action_mask': action_mask
+            'action_mask': action_mask,
+            'eeg_data': eeg_data  # Include EEG data in the returned dictionary
         }
 
 class NEW_LHF_IRL(Dataset):
@@ -131,8 +137,8 @@ class NEW_LHF_IRL(Dataset):
         feat_name = img_name[:-3] + 'pth.tar' #  000000019544.jpg --> 000000019544.pth.tar
         lr_path = join(self.LR_dir, cat_name.replace(' ', '_'), feat_name) # DCB_LR_dir/bottle/000000019544.pth.tar
         hr_path = join(self.HR_dir, cat_name.replace(' ', '_'), feat_name) # DCB_HR_dir/bottle/000000019544.pth.tar
-        lr = torch.load(lr_path) # Load DCB_LR file
-        hr = torch.load(hr_path) # Load DCB_HR file
+        lr = torch.load(lr_path, weights_only=False) # Load DCB_LR file
+        hr = torch.load(hr_path, weights_only=False) # Load DCB_HR file
         imgId = cat_name + '_' + img_name # bottle_000000019544.jpg dobare mishe img_info[idx]
 
         # TODO: ina ro daghighan nemifahmam vali bayad haminjoori piade sazi beshe
@@ -211,8 +217,8 @@ class LHF_Human_Gaze(Dataset):
         feat_name = img_name[:-3] + 'pth.tar'
         lr_path = join(self.LR_dir, cat_name.replace(' ', '_'), feat_name)
         hr_path = join(self.HR_dir, cat_name.replace(' ', '_'), feat_name)
-        state = torch.load(lr_path)
-        hr = torch.load(hr_path)
+        state = torch.load(lr_path, weights_only=False)
+        hr = torch.load(hr_path, weights_only=False)
 
         # construct DCB
         remap_ratio = self.pa.im_w / float(hr.size(-1))
@@ -259,6 +265,7 @@ class RolloutStorage(object):
         self.actions = torch.cat([traj["actions"] for traj in trajs_all])
         self.lprobs = torch.cat([traj['log_probs'] for traj in trajs_all])
         self.tids = torch.cat([traj['task_id'] for traj in trajs_all])
+        self.eeg_data = torch.cat([traj['eeg_data'].unsqueeze(0).repeat(traj['curr_states'].size(0), 1) for traj in trajs_all])
         self.returns = torch.cat([traj['acc_rewards']
                                   for traj in trajs_all]).view(-1)
         self.advs = torch.cat([traj['advantages']
@@ -279,12 +286,13 @@ class RolloutStorage(object):
             obs_fov_batch = self.obs_fovs[ind]
             actions_batch = self.actions[ind]
             tids_batch = self.tids[ind]
+            eeg_batch = self.eeg_data[ind]
             return_batch = self.returns[ind]
             log_probs_batch = self.lprobs[ind]
             advantage_batch = self.advs[ind]
 
             yield (
-                obs_fov_batch, tids_batch
+                obs_fov_batch, tids_batch, eeg_batch
             ), actions_batch, return_batch, log_probs_batch, advantage_batch
 
 

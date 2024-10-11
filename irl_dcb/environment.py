@@ -57,7 +57,7 @@ class IRL_Env4LHF:
                                 masks[:, 0]) * self.history_map + masks[:, 0]
         ext_states = self.states.clone()
 
-        return ext_states
+        return ext_states, self.eeg_data
 
     def get_reward(self, prob_old, prob_new):
         return torch.zeros(self.batch_size, device=self.device)
@@ -176,6 +176,7 @@ class IRL_Env4LHF:
         self.task_ids = data['task_id'].to(self.device)
         self.lr_feats = data['lr_feats'].to(self.device)
         self.hr_feats = data['hr_feats'].to(self.device)
+        self.eeg_data = data['eeg_data'].to(self.device)
         self.batch_size = self.hr_feats.size(0)
         if self.inhibit_return:
             self.action_mask = data['action_mask'].to(self.device).view(
