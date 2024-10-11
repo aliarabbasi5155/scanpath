@@ -99,7 +99,8 @@ class LHF_IRL(Dataset):
         coding = torch.from_numpy(coding).view(1, -1)
 
         # Retrieve EEG data for this image
-        eeg_data = torch.FloatTensor(self.eeg_data[imgId]) if imgId in self.eeg_data else torch.zeros(3)  # Default to zeros if EEG data is missing
+        # Inja else bayad pak beshe
+        eeg_data = torch.FloatTensor(self.eeg_data[imgId]) # Default to zeros if EEG data is missing
 
         # Return the data, including the EEG data
         return {
