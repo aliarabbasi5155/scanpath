@@ -64,7 +64,7 @@ def gen_scanpaths(generator,
 
     return scanpaths
 
-def plot_scanpaths_on_images(preds, hyperparams, image_source_location='images_eeg/', save_dir='result_eeg/'):
+def plot_scanpaths_on_images(preds, hyperparams, image_source_location='files/Task Images/', save_dir='files/result_eeg/'):
     for index,elem in enumerate(preds):
         filename = elem['task'] + "/" + os.path.splitext(elem['name'])[0] + ".png"
         print(str(index) + ". " + filename)
@@ -92,9 +92,9 @@ def plot_scanpaths_on_images(preds, hyperparams, image_source_location='images_e
 if __name__ == '__main__':
     # args = docopt(__doc__)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    hparams = "DCBs_JSONs/20230301_1147_sail_serach.json"
-    dataset_root = "DCBs_JSONs/dataset_test"
-    checkpoint = "assets/log_20241011_1608/checkpoints"
+    hparams = "files/DCBs_JSONs/20230301_1147_sail_serach.json"
+    dataset_root = "files/DCBs_JSONs/dataset_test"
+    checkpoint = "files/assets/log_20241011_1608/checkpoints"
     hparams = JsonConfig(hparams)
     print('😍')
 
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     DCB_dir_HR = join(dataset_root, 'DCBs/HR/')
     DCB_dir_LR = join(dataset_root, 'DCBs/LR/')
 
-    with open(('human_scanpath_valid_split.json'), encoding='utf-8') as json_file:
+    with open(('files/human_scanpath_valid_split.json'), encoding='utf-8') as json_file:
         human_scanpaths_test = json.load(json_file)
 
     cat_names = list(np.unique([x['task'] for x in human_scanpaths_test]))
@@ -166,5 +166,5 @@ if __name__ == '__main__':
     
     plot_scanpaths_on_images(preds=predictions,
                              hyperparams=hparams,
-                             image_source_location='Task Images/',
-                             save_dir='result_eeg/')
+                             image_source_location='files/Task Images/',
+                             save_dir='files/result_eeg/')

@@ -68,8 +68,8 @@ if __name__ == '__main__':
     # args = docopt(__doc__)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     hparams = "hparams/coco_search18.json"
-    dataset_root = "Google Drive"
-    checkpoint = "trained_models"
+    dataset_root = "files/Google Drive"
+    checkpoint = "files/trained_models"
     hparams = JsonConfig(hparams)
 
     # dir of pre-computed beliefs
@@ -85,11 +85,11 @@ if __name__ == '__main__':
     bbox_annos['bottle_222bottle.jpg'] = [54, 205, 32, 114]
     bbox_annos['bottle_333bottle.jpg'] = [54, 205, 32, 114]
     with open(join(dataset_root,
-                   'human_scanpaths_TP_trainval_train.json')) as json_file:
+                   'files/human_scanpaths_TP_trainval_train.json')) as json_file:
         human_scanpaths_train = json.load(json_file)
 
     with open(join(dataset_root,
-                   'human_scanpaths_TP_trainval_valid.json')) as json_file:
+                   'files/human_scanpaths_TP_trainval_valid.json')) as json_file:
         human_scanpaths_valid = json.load(json_file)
 
     target_init_fixs = {}
@@ -149,7 +149,7 @@ if __name__ == '__main__':
         filename = elem['task']+"/" + elem['name']
         print(str(index)+". "+filename)
 
-        image = cv.imread("/home/ali/Repos/Scanpath_Prediction/Website/1 COCOSearch18-images-TP 3101 target-present (TP) images (size: 1680x1050)/images/" + filename)
+        image = cv.imread("files/Website/1 COCOSearch18-images-TP 3101 target-present (TP) images (size: 1680x1050)/images/" + filename)
         
         X = elem['X']
         Y = elem['Y']
@@ -166,5 +166,5 @@ if __name__ == '__main__':
                 yprec = int(Y[i-1])
                 cv.line(image, (xprec, yprec), (x, y), (255, 255, 255))
 
-        os.makedirs("./old_results/" + elem['task'] + "/", exist_ok=True)
-        cv.imwrite("./old_results/" + elem['task'] + "/" + elem['name'], image)
+        os.makedirs("./files/old_results/" + elem['task'] + "/", exist_ok=True)
+        cv.imwrite("./files/old_results/" + elem['task'] + "/" + elem['name'], image)

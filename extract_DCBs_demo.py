@@ -51,7 +51,7 @@ if __name__ == '__main__':
     predictor = DefaultPredictor(cfg)
 
     # Compute DCB
-    img_path = './Website/1 COCOSearch18-images-TP 3101 target-present (TP) images (size: 1680x1050)/images/bottle/333bottle.jpg'
+    img_path = './files/Website/1 COCOSearch18-images-TP 3101 target-present (TP) images (size: 1680x1050)/images/bottle/333bottle.jpg'
     high_feat, low_feat = get_DCBs(img_path, predictor)
     print(high_feat.shape, low_feat.shape)
 
