@@ -1,9 +1,9 @@
 import torch
 import torch.nn.functional as F
 import numpy as np
+import os
 
 from PIL import Image, ImageFilter
-import detectron2
 from detectron2.config import get_cfg
 from detectron2.modeling import build_backbone
 from detectron2.engine import DefaultPredictor
@@ -36,25 +36,40 @@ def get_DCBs(img_path, predictor, radius=1):
 
 
 if __name__ == '__main__':
-
     # Load pretrained panoptic_fpn
     cfg = get_cfg()
     cfg.merge_from_file(
         './detectron2/configs/COCO-PanopticSegmentation/panoptic_fpn_R_50_3x.yaml'
     )
+    cfg.MODEL.WEIGHTS = 'detectron2://COCO-PanopticSegmentation/panoptic_fpn_R_50_3x/139514569/model_final_c10459.pkl'
     model = build_backbone(cfg).to(device)
     model.eval()
 
-    cfg.MODEL.WEIGHTS = 'detectron2://COCO-PanopticSegmentation/panoptic_fpn_R_50_3x/139514569/model_final_c10459.pkl'
-    model_coco = build_backbone(cfg).to(device)
-    model_coco.eval()
     predictor = DefaultPredictor(cfg)
 
-    # Compute DCB
-    img_path = './files/Website/1 COCOSearch18-images-TP 3101 target-present (TP) images (size: 1680x1050)/images/bottle/333bottle.jpg'
-    high_feat, low_feat = get_DCBs(img_path, predictor)
-    print(high_feat.shape, low_feat.shape)
+    # Specify directories
+    img_dir = 'files/Raw_Gaze_Data/Stroop'
+    hr_dir = 'files/Stroop_DataSet/DCBs/HR'
+    lr_dir = 'files/Stroop_DataSet/DCBs/LR'
+    
+    # Ensure output directories exist
+    os.makedirs(hr_dir, exist_ok=True)
+    os.makedirs(lr_dir, exist_ok=True)
 
-    # Save the features for later use
-    torch.save(high_feat, 'Google Drive/DCBs/HR/bottle/333bottle.pth.tar')
-    torch.save(low_feat, 'Google Drive/DCBs/LR/bottle/333bottle.pth.tar')
+    # Process each image file in the directory
+    for img_filename in os.listdir(img_dir):
+        img_path = os.path.join(img_dir, img_filename)
+
+        # Check if the file is an image
+        if img_filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+            target_images = ["Slide1", "Slide3", "Slide5" ,"Slide7" ,"Slide9" ,"Slide11", "Slide13", "Slide15", "Slide17", "Slide19", "Slide21", "Slide23", "Slide25", "Slide27", "Slide29", "Slide31", "Slide33", "Slide35", "Slide37", "Slide39"]
+            if not img_filename.replace(".png","").replace(" ","") in target_images:
+                continue
+            high_feat, low_feat = get_DCBs(img_path, predictor)
+            image_filename = f'{img_filename.replace(".png","").replace(" ","")}.pth.tar'
+
+            # Save features to HR and LR directories
+            torch.save(high_feat, os.path.join(hr_dir, image_filename))
+            torch.save(low_feat, os.path.join(lr_dir, image_filename))
+
+            print(f"Processed and saved features for {img_filename}")
