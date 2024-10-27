@@ -24,7 +24,7 @@ if __name__ == '__main__':
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     hparams = "files/DCBs_JSONs/20230301_1147_sail_serach.json"
     # hparams = "hparams/coco_search18.json"
-    dataset_root = "files/DCBs_JSONs/dataset_test"
+    dataset_root = "files/Stroop_DataSet"
     hparams = JsonConfig(hparams)
 
     # dir of pre-computed beliefs
@@ -39,12 +39,12 @@ if __name__ == '__main__':
     # with open(join(dataset_root, # TODO: scanpath dakhele directory e dataset root bashe behtare
     #                'SAIL_fixations_TP_train.json')) as json_file:
     #     human_scanpaths_train = json.load(json_file)
-    with open('files/human_scanpath_train_split.json') as json_file:
+    with open(join(dataset_root,'stroop_human_scanpath_train_split.json')) as json_file:
         human_scanpaths_train = json.load(json_file)
 
     # with open(join(dataset_root, # TODO: scanpath dakhele directory e dataset root bashe behtare
     #                'SAIL_fixations_TP_train.json')) as json_file:
-    with open('files/human_scanpath_valid_split.json') as json_file:
+    with open(join(dataset_root,'stroop_human_scanpath_valid_split.json')) as json_file:
         human_scanpaths_valid = json.load(json_file)
 
     # exclude incorrect scanpaths
