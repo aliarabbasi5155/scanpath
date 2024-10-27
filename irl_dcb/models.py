@@ -105,7 +105,12 @@ class LHF_Policy_Cond_Small(nn.Module):
         x = self.modulate_features(x, tid_onehot)
         x = self.max_pool(torch.relu(self.critic1(x)))
         x = x.view(bs, x.size(1), -1).mean(dim=-1)
-        x = torch.cat([x, tid_onehot.squeeze()], dim=1)
+
+        # This is for multi-task 
+        # x = torch.cat([x, tid_onehot.squeeze()], dim=1)
+        # Updated code to fix the dimension mismatch because our situation is single-task
+        x = torch.cat([x, tid_onehot.view(bs, -1)], dim=1)
+
         x = torch.relu(self.critic2(x))
 
         # process EEG data and concatenate
