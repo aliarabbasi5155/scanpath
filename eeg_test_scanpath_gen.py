@@ -92,9 +92,9 @@ def plot_scanpaths_on_images(preds, hyperparams, image_source_location='files/Ta
 if __name__ == '__main__':
     # args = docopt(__doc__)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    hparams = "files/DCBs_JSONs/20230301_1147_sail_serach.json"
-    dataset_root = "files/DCBs_JSONs/dataset_test"
-    checkpoint = "files/assets/log_20241011_1608/checkpoints"
+    hparams = "files/assets/log_20241027_1630/20241027_1630_20230301_1147_sail_serach.json"
+    dataset_root = "files/Stroop_DataSet"
+    checkpoint = "files/assets/log_20241027_1630/checkpoints"
     hparams = JsonConfig(hparams)
     print('😍')
 
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     DCB_dir_HR = join(dataset_root, 'DCBs/HR/')
     DCB_dir_LR = join(dataset_root, 'DCBs/LR/')
 
-    with open(('files/human_scanpath_valid_split.json'), encoding='utf-8') as json_file:
+    with open(('files/Stroop_DataSet/stroop_human_scanpath_valid_split.json'), encoding='utf-8') as json_file:
         human_scanpaths_test = json.load(json_file)
 
     cat_names = list(np.unique([x['task'] for x in human_scanpaths_test]))
@@ -117,7 +117,7 @@ if __name__ == '__main__':
                                  traj['Y'][0] / hparams.Data.im_h)
         eeg_data[key] = traj['eeg_data']
         bbox_annos[key] = traj['bbox']
-
+    # bbox_annos = np.load('files/Stroop_DataSet/bbox_annos.npy', allow_pickle=True).item()
     # TODO: Ino bayad oaky konam ke ba flag e testing anjam bede
     # dataset = process_data(human_scanpaths_train, human_scanpaths_valid, 
     #                        DCB_dir_HR, DCB_dir_LR, bbox_annos, hparams)
@@ -166,5 +166,5 @@ if __name__ == '__main__':
     
     plot_scanpaths_on_images(preds=predictions,
                              hyperparams=hparams,
-                             image_source_location='files/Task Images/',
-                             save_dir='files/result_eeg/')
+                             image_source_location='files/Stroop_DataSet/Stroop/',
+                             save_dir='files/Stroop_result_eeg/')
