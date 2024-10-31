@@ -48,7 +48,7 @@ if __name__ == '__main__':
     predictor = DefaultPredictor(cfg)
 
     # Specify directories
-    img_dir = 'files/Raw_Gaze_Data/Stroop'
+    img_dir = 'files/Stroop_DataSet/Stroop'
     hr_dir = 'files/Stroop_DataSet/DCBs/HR'
     lr_dir = 'files/Stroop_DataSet/DCBs/LR'
     
@@ -56,20 +56,27 @@ if __name__ == '__main__':
     os.makedirs(hr_dir, exist_ok=True)
     os.makedirs(lr_dir, exist_ok=True)
 
-    # Process each image file in the directory
-    for img_filename in os.listdir(img_dir):
-        img_path = os.path.join(img_dir, img_filename)
+    # Process each image file in the directory recursively
+    for root, dirs, files in os.walk(img_dir):
+        for img_filename in files:
+            # Check if the file is an image
+            if img_filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+                img_path = os.path.join(root, img_filename)
 
-        # Check if the file is an image
-        if img_filename.lower().endswith(('.png', '.jpg', '.jpeg')):
-            target_images = ["Slide1", "Slide3", "Slide5" ,"Slide7" ,"Slide9" ,"Slide11", "Slide13", "Slide15", "Slide17", "Slide19", "Slide21", "Slide23", "Slide25", "Slide27", "Slide29", "Slide31", "Slide33", "Slide35", "Slide37", "Slide39"]
-            if not img_filename.replace(".png","").replace(" ","") in target_images:
-                continue
-            high_feat, low_feat = get_DCBs(img_path, predictor)
-            image_filename = f'{img_filename.replace(".png","").replace(" ","")}.pth.tar'
+                # Get high and low resolution features
+                high_feat, low_feat = get_DCBs(img_path, predictor)
+                
+                # Create relative path and ensure the output directories exist
+                relative_path = os.path.relpath(root, img_dir)
+                hr_output_dir = os.path.join(hr_dir, relative_path)
+                lr_output_dir = os.path.join(lr_dir, relative_path)
+                
+                os.makedirs(hr_output_dir, exist_ok=True)
+                os.makedirs(lr_output_dir, exist_ok=True)
 
-            # Save features to HR and LR directories
-            torch.save(high_feat, os.path.join(hr_dir, image_filename))
-            torch.save(low_feat, os.path.join(lr_dir, image_filename))
+                # Save features to HR and LR directories
+                image_filename = f'{img_filename.replace(".png", "").replace(" ", "")}.pth.tar'
+                torch.save(high_feat, os.path.join(hr_output_dir, image_filename))
+                torch.save(low_feat, os.path.join(lr_output_dir, image_filename))
 
-            print(f"Processed and saved features for {img_filename}")
+                print(f"Processed and saved features for {img_filename}")
