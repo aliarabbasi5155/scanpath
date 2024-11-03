@@ -48,7 +48,7 @@ if __name__ == '__main__':
     predictor = DefaultPredictor(cfg)
 
     # Specify directories
-    img_dir = 'files/Stroop_DataSet/Stroop'
+    img_dir = 'files/Stroop_DataSet/Stroop 512x320'
     hr_dir = 'files/Stroop_DataSet/DCBs/HR'
     lr_dir = 'files/Stroop_DataSet/DCBs/LR'
     

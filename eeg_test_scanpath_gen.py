@@ -92,9 +92,9 @@ def plot_scanpaths_on_images(preds, hyperparams, image_source_location='files/Ta
 if __name__ == '__main__':
     # args = docopt(__doc__)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    hparams = "files/assets/log_20241027_1630/20241027_1630_20230301_1147_sail_serach.json"
+    hparams = "files/DCBs_JSONs/20230301_1147_sail_serach.json"
     dataset_root = "files/Stroop_DataSet"
-    checkpoint = "files/assets/log_20241027_1630/checkpoints"
+    checkpoint = "assets/log_20241103_2018/checkpoints"
     hparams = JsonConfig(hparams)
     print('😍')
 
@@ -166,5 +166,5 @@ if __name__ == '__main__':
     
     plot_scanpaths_on_images(preds=predictions,
                              hyperparams=hparams,
-                             image_source_location='files/Stroop_DataSet/Stroop/',
+                             image_source_location='files/Stroop_DataSet/Stroop 512x320/',
                              save_dir='files/Stroop_result_eeg/')
